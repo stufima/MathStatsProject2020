@@ -10,27 +10,44 @@
 # Define UI for application that draws diagrams ----
 shinyUI(
 ## Page-definiton ====    
-    fluidPage(
-
-### Application title ####
-    titlePanel(textOutput("title"))
-    , textOutput("source")
-
-### Application header/sidebar ####
-    # Sidebar with a slider input for Demographic Information like ages
-    , sidebarLayout(
-        sidebarPanel(
-            sliderInput("ages"
-                        , "Age in years:"
-                        , min = 15
-                        , max = 80
-                        , value = 30
-                        )
-        ),
-### Application body ####
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
+  dashboardPage(
+### Header - Application title ####
+        getHeader()
+### Menu ####
+        , dashboardSidebar(
+            sidebarMenuOutput("left_menu")
+        )
+### Begin of dashboardBody ####
+    , dashboardBody(
+        tabItems(
+### Tab - Survey ####
+          tabItem(
+            tabName = df_tab_ids$id[[1]]
+            , fluidRow(
+                  getUISurveyInputTabBox()
+                , getUISurveyOutputTabBoxPlots()
+                , getUISurveyOutputTabBoxDataTables()
+            )
+### End-Tab - Survey ####
+          )
+### Tab - About ####
+          , tabItem(
+              tabName = df_tab_ids$id[[2]]
+              , fluidRow(
+                  box(
+                      title = "Informations",
+                      width = 12,
+                      collapsible = FALSE
+                      , textOutput("informations")
+                      , textOutput("source")
+                  )
+              )
+### End-Tab - About ####
+          )
+# End of dashBoardBody ------ 
         )
     )
-))
+# End of Page ------ 
+  )
+# End of Shiny App ------ 
+) 
