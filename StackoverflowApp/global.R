@@ -1,3 +1,13 @@
+# TODOS ----
+#NAs entfernen
+# Jakob  = Respondent,MainBranch,Hobbyist,Employment,Country,Student,EdLevel,
+# Bente  = OrgSize DevType,YearsCode,ConvertedComp,WorkWeekHrs,WorkRemote,ImpSyn,
+# Marcus = PurchaseWhat,LanguageWorkedWith,Age,Gender,Trans,Sexuality,Ethnicity,Dependents
+
+# Werte übersetzen übernimmt Dummy der Linearen Regression
+
+# Anzahl der Kategorien mit überprüfen distinct oder unique 
+
 # Globals for the app ----
 ## Prerequisites ====
 library(shiny)          # framework to generate this web-app
@@ -7,10 +17,10 @@ library(tidyverse)      # dplyr and co.
 debug <- FALSE
 # Data ----
 ## Import Data ====
-df_survey <- read_csv("../data/survey_results_public.csv")
+#df_survey <- read_csv("../data/survey_results_public.csv")
 # test without shiny app
 #TODO siehe Abschnitt AGE, wenn hier sofort auf integer geht, kommen NA
-#df_survey <- read_csv("data/survey_results_public.csv")
+df_survey <- read_csv("data/survey_results_public.csv")
 #                      col_types = cols(Age = col_integer()))
 if (debug) {
   print(paste("Survey colnames count", length(df_survey)))
@@ -65,8 +75,8 @@ if (debug) {
   print(unique(df_ages_nna$Age))
 }
 df_ages <- df_ages_nna %>% 
-  filter(Age >  10) %>%
-  filter(Age <= 80) %>%
+  filter(Age >=  min_age) %>%
+  filter(Age <= max_age) %>%
   arrange(Age) 
 if (debug) {
   print(unique(df_ages$Age))
@@ -129,8 +139,8 @@ df_tab_ids <- data.frame(
 colnames(df_tab_ids) <- c("label","id","icon")
 
 ## Survey - Input Elements ====
-min_age <- 15
-max_age <- 80
+min_age <- 25
+max_age <- 70
 
 getUISurveyInputTabBox <- function(){
   l_in_sur_tb <- box(
