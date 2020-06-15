@@ -17,10 +17,10 @@ library(tidyverse)      # dplyr and co.
 debug <- FALSE
 # Data ----
 ## Import Data ====
-#df_survey <- read_csv("../data/survey_results_public.csv")
+# df_survey <- read_csv("../data/survey_results_public.csv")
 # test without shiny app
 #TODO siehe Abschnitt AGE, wenn hier sofort auf integer geht, kommen NA
-df_survey <- read_csv("data/survey_results_public.csv")
+ df_survey <- read_csv("data/survey_results_public.csv")
 #                      col_types = cols(Age = col_integer()))
 if (debug) {
   print(paste("Survey colnames count", length(df_survey)))
@@ -57,6 +57,74 @@ if (debug) {
 
 ## Select Data ====
 #str(df_survey)
+### Respondent ####
+# Verwendung dieser Spalte als Primärschlüssel
+# Überprüfung ob Werte alle befüllt und einmalig sind:
+sum(is.na(df_survey$Respondent))                # Bedingung erfüllt!
+sum(isTRUE(duplicated(df_survey$Respondent)))   # Bedingung erfüllt!    
+
+### MainBranch ####
+# Anzeige des Wertebereiches
+df_survey %>%
+  count(MainBranch)
+
+# Datensatz bereinigen, behalten der professionellen und Teilzeit-Entwickler
+df_survey<- df_survey %>% 
+  filter(MainBranch %in% c("I am a developer by profession", "I am not primarily a developer, but I write code sometimes as part of my work"))
+
+### Hobbyist ####
+# Anmerkung: ich halte diese Variable für nicht aussagekräftig. Hier einen Filter anzuwenden ist m.E. nach nicht zielführend.
+# Überprüfung des Wertebereiches
+df_survey %>%
+  count(Hobbyist)
+
+# Bereinigung des Datensatzes um Entwickler, welche (zusätzlich?) in Ihrer Freizeit programmieren (Achtung: großer Datenverlust!)
+df_survey <- df_survey %>%
+  filter(Hobbyist == "No")
+
+### Employment ####
+# Überprüfung des Wertebereiches
+df_survey %>%
+  count(Employment)
+
+# Bereinigung des Datensatzes. Behalten der Vollzeit-Angestellten und der Freelancer
+df_survey <- df_survey %>%
+  filter(Employment %in% c("Employed full-time", "Independent contractor, freelancer, or self-employed"))
+
+### Country ####
+# Überprüfung des Wertebereiches
+countries <- df_survey %>%
+  count(Country)
+
+# Entfernung der Länder mit weniger als 50 Entwicklern - zu prüfen: Ergibt das Sinn?
+countries <- countries %>%
+  filter(n >= 50)
+
+df_survey <- df_survey %>%
+  filter(Country %in% countries$Country)
+
+### Student ####
+# Überprüfen des Wertebereiches
+df_survey %>%
+  count(Student)
+
+# Bereinigen des Datensatzes. Behalten der Nicht-Studenten
+df_survey <- df_survey %>%
+  filter(Student == "No")
+
+### EdLevel ####
+# Überprüfen des Wertebereiches
+df_survey %>%
+  count(EdLevel)
+
+# Bereinigen des Datensatzes, behalten ausgewählter EdLevels
+df_survey <- df_survey %>%
+  filter(EdLevel %in% c("Associate degree",
+                        "Bachelor’s degree (BA, BS, B.Eng., etc.)",
+                        "Master’s degree (MA, MS, M.Eng., MBA, etc.)",
+                        "Other doctoral degree (Ph.D, Ed.D., etc.)",
+                        "Some college/university study without earning a degree"))
+
 ### Age ####
 if (debug) {
   range(df_survey$Age)
