@@ -143,6 +143,8 @@ YearsCode <- df_survey %>%
 df_survey <- df_survey %>%
   filter(!is.na(YearsCode)) %>%
   filter(!YearsCode %in% c("Less than 1 year", "More than 50 years"))
+  
+df_survey$YearsCode <- as.numeric(df_survey$YearsCode)
 
 ### WorkWeekHrs ####
 WorkWeekHrs <- df_survey %>%
@@ -192,6 +194,21 @@ df_survey %>%
 
 df_survey <- df_survey %>%
   filter(!is.na(Dependents))
+# Regression ----
+rm <- lm(data = df_survey, formula = ConvertedComp ~ 
+       MainBranch 
+     + Employment 
+     + Country
+     # + Student (nicht im Modell, hat nur eine Ausprägung)
+     + EdLevel
+     # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
+     + YearsCode
+     + WorkWeekHrs
+     + OrgSize
+     + Gender
+     + Dependents)
+
+summary(rm)
 # UI ----
 
 ## Header ====
