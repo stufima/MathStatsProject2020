@@ -1,59 +1,35 @@
 # TODOS ----
-#NAs entfernen
-# Jakob  = Respondent,MainBranch,Hobbyist,Employment,Country,Student,EdLevel,
-# Bente  = OrgSize DevType,YearsCode,ConvertedComp,WorkWeekHrs,WorkRemote,ImpSyn,
-# Marcus = PurchaseWhat,LanguageWorkedWith,Age,Gender,Trans,Sexuality,Ethnicity,Dependents
-
+# Berücksichtigung von Auswirkung der Wochenarbeitszeit auf das Gehalt (Stundenlohn)
 # Werte übersetzen übernimmt Dummy der Linearen Regression
 
 # Anzahl der Kategorien mit überprüfen distinct oder unique 
 
 # Globals for the app ----
-## Prerequisites ====
+## Prerequisites and constants ====
 library(shiny)          # framework to generate this web-app
 library(shinydashboard) # generate a dashboard frontend
 library(plotly)         # generates interactive web-graphics
 library(tidyverse)      # dplyr and co.
+# deactivate when starting the app
 debug <- FALSE
+# Survey - Input Elements
+min_age <- 20
+max_age <- 70
+min_week_hours <- 8
+max_week_hours <- 70
+min_ConvertedComp <- 5000
+max_ConvertedComp <- 300000
 # Data ----
 ## Import Data ====
-# df_survey <- read_csv("../data/survey_results_public.csv")
 # test without shiny app
 #TODO siehe Abschnitt AGE, wenn hier sofort auf integer geht, kommen NA
- df_survey <- read_csv("data/survey_results_public.csv")
-#                      col_types = cols(Age = col_integer()))
 if (debug) {
+  df_survey <- read_csv("data/survey_results_public.csv")
+  #                      col_types = cols(Age = col_integer()))
   print(paste("Survey colnames count", length(df_survey)))
+} else {
+  df_survey <- read_csv("../data/survey_results_public.csv")
 }
-
-## Export Data ====
-#df_survey <- read_csv("data/survey_results_public.csv")
-#df_survey_team <- df_survey %>% select(
-#    Respondent
-#  , MainBranch
-#  , Hobbyist
-#  , Employment
-#  , Country
-#  , Student
-#  , EdLevel
-#  , OrgSize
-#  , DevType
-#  , YearsCode
-#  , ConvertedComp
-#  , WorkWeekHrs
-#  , WorkRemote
-#  , ImpSyn
-#  , PurchaseWhat
-#  , LanguageWorkedWith
-#  , Age
-#  , Gender
-#  , Trans
-#  , Sexuality
-#  , Ethnicity
-#  , Dependents
-#)
-#out_file <- file.path(getwd(), "survey_results_public_t.csv")
-#write_csv(df_survey_team, out_file)
 
 ## Select Data ====
 #str(df_survey)
@@ -72,16 +48,6 @@ df_survey %>%
 df_survey<- df_survey %>% 
   filter(MainBranch %in% c("I am a developer by profession", "I am not primarily a developer, but I write code sometimes as part of my work"))
 
-### Hobbyist ####
-# Anmerkung: ich halte diese Variable für nicht aussagekräftig. Hier einen Filter anzuwenden ist m.E. nach nicht zielführend.
-# Überprüfung des Wertebereiches
-df_survey %>%
-  count(Hobbyist)
-
-# Bereinigung des Datensatzes um Entwickler, welche (zusätzlich?) in Ihrer Freizeit programmieren (Achtung: großer Datenverlust!)
-df_survey <- df_survey %>%
-  filter(Hobbyist == "No")
-
 ### Employment ####
 # Überprüfung des Wertebereiches
 df_survey %>%
@@ -89,7 +55,7 @@ df_survey %>%
 
 # Bereinigung des Datensatzes. Behalten der Vollzeit-Angestellten und der Freelancer
 df_survey <- df_survey %>%
-  filter(Employment %in% c("Employed full-time", "Independent contractor, freelancer, or self-employed"))
+  filter(Employment %in% c("Employed full-time", "Independent contractor, freelancer, or self-employed", "Employed part-time"))
 
 ### Country ####
 # Überprüfung des Wertebereiches
@@ -98,7 +64,7 @@ countries <- df_survey %>%
 
 # Entfernung der Länder mit weniger als 50 Entwicklern - zu prüfen: Ergibt das Sinn?
 countries <- countries %>%
-  filter(n >= 50)
+  filter(n >= 500)
 
 df_survey <- df_survey %>%
   filter(Country %in% countries$Country)
@@ -126,66 +92,106 @@ df_survey <- df_survey %>%
                         "Some college/university study without earning a degree"))
 
 ### Age ####
-if (debug) {
-  range(df_survey$Age)
-  df_ages_na <- df_survey %>% 
-    filter(is.na(Age))
+if (debug){
+  age <- df_survey %>%
+    count(Age)
+  
+  print(unique(df_survey$Age))   # count() ist für Betrachtung sinnvoller
 }
-df_ages_nna <- df_survey %>% 
-  filter(!is.na(Age))
-if (debug) {
-  range(df_ages_nna$Age)
-  print(unique(df_ages_nna$Age))
-}
-#TODO Team-Decision
-df_ages_nna$Age <- round(df_ages_nna$Age,0)
-if (debug) {
-  print(unique(df_ages_nna$Age))
-}
-df_ages <- df_ages_nna %>% 
+
+df_survey <- df_survey %>%
+  filter(!is.na(Age)) %>%
   filter(Age >=  min_age) %>%
   filter(Age <= max_age) %>%
-  arrange(Age) 
-if (debug) {
-  print(unique(df_ages$Age))
-}
-df_ages$Age <- as.integer(df_ages$Age)
+  mutate(Age = as.integer(Age))
 
-df_ages_test <- df_ages %>%
-  select(
-    Age
-    #    Respondent
-    #  , MainBranch
-    #  , Hobbyist
-    #  , Employment
-    #  , Country
-    #  , Student
-    #  , EdLevel
-    #  , OrgSize
-    #  , DevType
-    , YearsCode
-    #  , ConvertedComp
-    #  , WorkWeekHrs
-    #  , WorkRemote
-    #  , ImpSyn
-    #  , PurchaseWhat
-    #  , LanguageWorkedWith
-    #  , Age
-    , Gender
-    , Trans
-    , Sexuality
-    , Ethnicity
-    , Dependents
-  )
-
+# für die Anzeige im UI benötigt
 getDataAges <- function(){
-   l_dataAges <- df_ages_test %>%
+   l_dataAges <- df_survey %>%
+     select(
+       Age
+       #    Respondent
+       #  , MainBranch
+       #  , Hobbyist
+       #  , Employment
+       #  , Country
+       #  , Student
+       #  , EdLevel
+       #  , OrgSize
+       #  , DevType
+       , YearsCode
+       #  , ConvertedComp
+       #  , WorkWeekHrs
+       #  , WorkRemote
+       #  , ImpSyn
+       #  , PurchaseWhat
+       #  , LanguageWorkedWith
+       #  , Age
+       , Gender
+       , Dependents
+     ) %>%
      slice(1:10)
 # without order
 #     top_n(20)
   return(l_dataAges)
 }
 
+### YearsCode ####
+YearsCode <- df_survey %>%
+  count(YearsCode)
+
+df_survey <- df_survey %>%
+  filter(!is.na(YearsCode)) %>%
+  filter(!YearsCode %in% c("Less than 1 year", "More than 50 years"))
+
+### WorkWeekHrs ####
+WorkWeekHrs <- df_survey %>%
+  count(WorkWeekHrs)
+
+df_survey <- df_survey %>%
+  filter(WorkWeekHrs >= min_week_hours) %>%
+  filter(WorkWeekHrs <= max_week_hours)
+
+### ConvertedComp ####
+ConvertedComp <- df_survey %>%
+  count(ConvertedComp)
+
+df_survey <- df_survey %>%
+  filter(ConvertedComp >= min_ConvertedComp) %>%
+  filter(ConvertedComp <= max_ConvertedComp)
+
+### OrgSize ####
+df_survey %>%
+  count(OrgSize)
+
+df_survey <- df_survey %>%
+  filter(!is.na(OrgSize)) 
+
+df_survey <- df_survey %>%  
+  mutate(OrgSize = ifelse(df_survey$OrgSize %in% c("Just me - I am a freelancer, sole proprietor, etc.",
+                                                   "2-9 employees",
+                                                   "10 to 19 employees",
+                                                   "20 to 99 employees"), "1-99",
+                          ifelse(df_survey$OrgSize %in% c("100 to 499 employees",
+                                                          "500 to 999 employees"), "100-999",
+                                 ifelse(df_survey$OrgSize %in% c("1,000 to 4,999 employees",
+                                                                 "5,000 to 9,999 employees",
+                                                                 "10,000 or more employees"), "1000+","0"))))
+
+### Gender ####
+df_survey %>%
+  count(Gender)
+
+df_survey <- df_survey %>%
+  filter(!is.na(Gender)) %>%
+  filter(Gender %in% c("Man", "Woman"))
+
+### Dependents ####
+df_survey %>%
+  count(Dependents)
+
+df_survey <- df_survey %>%
+  filter(!is.na(Dependents))
 # UI ----
 
 ## Header ====
@@ -206,9 +212,7 @@ df_tab_ids <- data.frame(
 )
 colnames(df_tab_ids) <- c("label","id","icon")
 
-## Survey - Input Elements ====
-min_age <- 25
-max_age <- 70
+
 
 getUISurveyInputTabBox <- function(){
   l_in_sur_tb <- box(
