@@ -1,9 +1,3 @@
-# TODOS ----
-# Berücksichtigung von Auswirkung der Wochenarbeitszeit auf das Gehalt (Stundenlohn)
-# Werte übersetzen übernimmt Dummy der Linearen Regression
-
-# Anzahl der Kategorien mit überprüfen distinct oder unique 
-
 # Globals for the app ----
 ## Prerequisites and constants ====
 library(shiny)          # framework to generate this web-app
@@ -105,37 +99,6 @@ df_survey <- df_survey %>%
   filter(Age <= max_age) %>%
   mutate(Age = as.integer(Age))
 
-# für die Anzeige im UI benötigt
-getDataAges <- function(){
-   l_dataAges <- df_survey %>%
-     select(
-       Age
-       #    Respondent
-       #  , MainBranch
-       #  , Hobbyist
-       #  , Employment
-       #  , Country
-       #  , Student
-       #  , EdLevel
-       #  , OrgSize
-       #  , DevType
-       , YearsCode
-       #  , ConvertedComp
-       #  , WorkWeekHrs
-       #  , WorkRemote
-       #  , ImpSyn
-       #  , PurchaseWhat
-       #  , LanguageWorkedWith
-       #  , Age
-       , Gender
-       , Dependents
-     ) %>%
-     slice(1:10)
-# without order
-#     top_n(20)
-  return(l_dataAges)
-}
-
 ### YearsCode ####
 YearsCode <- df_survey %>%
   count(YearsCode)
@@ -195,20 +158,25 @@ df_survey %>%
 df_survey <- df_survey %>%
   filter(!is.na(Dependents))
 # Regression ----
-rm <- lm(data = df_survey, formula = ConvertedComp ~ 
-       MainBranch 
+rm <- lm(data = df_survey, formula = ConvertedComp/WorkWeekHrs ~ 
+        
+     + MainBranch 
      + Employment 
      + Country
      # + Student (nicht im Modell, hat nur eine Ausprägung)
      + EdLevel
      # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
      + YearsCode
-     + WorkWeekHrs
+     
      + OrgSize
      + Gender
-     + Dependents)
+     + Dependents   
+        )
 
-summary(rm)
+regression <- as.data.frame(summary(rm)$coefficients) 
+regression <- regression %>%
+  mutate("Coefficients" = rownames(regression))
+
 # UI ----
 
 ## Header ====
@@ -229,19 +197,43 @@ df_tab_ids <- data.frame(
 )
 colnames(df_tab_ids) <- c("label","id","icon")
 
-
-
+## User Input ====
 getUISurveyInputTabBox <- function(){
   l_in_sur_tb <- box(
     title = textOutput("select_below")
     , width = 12
     , collapsible = TRUE
-    , sliderInput(inputId = "ages"
-                  , label = "Age in years:"
-                  , min = min_age
-                  , max = max_age
-                  , value = 30
-    )
+   # MainBranch 
+    , selectInput(inputId = "MainBranch", label = "MainBranch", choices = unique(df_survey$MainBranch))
+    # + Employment 
+   , selectInput(inputId = "Employment", label = "Employment", choices = unique(df_survey$Employment))
+    # + Country
+   , selectInput(inputId = "Country", label = "Country", choices = unique(df_survey$Country))
+   # # + Student (nicht im Modell, hat nur eine Ausprägung)
+    # + EdLevel
+   , selectInput(inputId = "EdLevel", label = "EdLevel", choices = unique(df_survey$EdLevel))
+    # # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
+   # + YearsCode
+   , sliderInput(inputId = "YearsCode"
+                 , label = "Code in years:"
+                 # , min = min(df_survey$YearsCode)
+                 , min = 0
+                 , max = max(df_survey$YearsCode)
+                 , value = 0
+   )
+    # + WorkWeekHrs
+   , sliderInput(inputId = "WorkWeekHrs"
+                 , label = "Work Week in hours:"
+                 , min = 0
+                 , max = max_week_hours
+                 , value = 30
+   )
+    # + OrgSize
+   , selectInput(inputId = "OrgSize", label = "OrgSize", choices = unique(df_survey$OrgSize))
+    # + Gender
+   , radioButtons(inputId = "Gender", label = "Gender", choices = unique(df_survey$Gender))
+    # + Dependents
+   , selectInput(inputId = "Dependents", label = "Dependents", choices = unique(df_survey$Dependents))
   )
   return(l_in_sur_tb)
 }
@@ -249,44 +241,26 @@ getUISurveyInputTabBox <- function(){
 getUISurveyOutputTabBoxPlots <- function(){
   l_out_sur_tb_pl <- box(
     width = 12
-    , tabBox(
-      id = "tabsetPlotsGermany"
-      , width = "500px"
-      , tabPanel(
-        "Ages"
-        , textOutput("plotCasesTitle")
-        , plotlyOutput("plotCases"
-                       , width = 600
-        )
-      )
-      , tabPanel(
-        "Gender"
-        , textOutput("plotCasesPer100kTitle")
-        , plotlyOutput("plotCasesPer100K"
-                       , width = 600
-        )
-      )
-    )
+    , textOutput("plotCasesTitle")
+    , valueBoxOutput("yearsCodeFitted")        
   )
   return(l_out_sur_tb_pl)
 }
 ## Survey - Output Data Tables ====
 getUISurveyOutputTabBoxDataTables <- function(){
   l_out_sur_tb_dt <- box(
-    title = "Details to selection"
+    title = "Details of regression"
     , width = 12
     , collapsible = TRUE
-    , tabBox(
-      id = "tabsetDetails"
-      , width = "400px"
-      , tabPanel("Result of input selection"
-                 , tableOutput("dataAges")
-      )
-      ### Germany - Output details to plot Ages ####
-      , tabPanel("Details to plot ages"
-                 , tableOutput("dataDetailsAges")
-      )
-    )
+    , collapsed = TRUE 
+    , tableOutput("dataAges")
+    
+    , tags$p(paste("R-Squared:", summary(rm)$r.squared))
+    , tags$p(paste("adj. R-Squared:", summary(rm)$adj.r.squared))
+    , tags$p(paste("F-statistic:", summary(rm)$fstatistic[[1]], 
+                   "on", summary(rm)$fstatistic[[2]], 
+                   "and", summary(rm)$fstatistic[[3]],
+                   "DF"))
   )
   return(l_out_sur_tb_dt)
 }

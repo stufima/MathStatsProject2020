@@ -35,11 +35,17 @@ shinyUI(
               tabName = df_tab_ids$id[[2]]
               , fluidRow(
                   box(
-                      title = "Informations",
+                      # title = "Informations",
                       width = 12,
-                      collapsible = FALSE
-                      , textOutput("informations")
-                      , textOutput("source")
+                      collapsible = FALSE,
+                      # , textOutput("informations")
+                      # , textOutput("source")
+                      ## Tab About - Output ====
+                      tags$h2("Some Informations about the Survey"),
+                      tags$p("Source-Dataset: 88,883 observations of 85 variables "),
+                      tags$p("Used-Dataset: 29,573 observations of 13 variables "),
+                      # tags$p("Source: https://insights.stackoverflow.com/survey")
+                      tags$a(href="https://insights.stackoverflow.com/survey", "to survey Stackoverflow")
                   )
               )
 ### End-Tab - About ####
