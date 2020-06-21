@@ -208,7 +208,10 @@ rm <- lm(data = df_survey, formula = ConvertedComp ~
      + Gender
      + Dependents)
 
-summary(rm)
+regression <- as.data.frame(summary(rm)$coefficients) 
+regression <- regression %>%
+  mutate("Coefficients" = rownames(regression))
+
 # UI ----
 
 ## Header ====

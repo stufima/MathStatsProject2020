@@ -57,14 +57,12 @@ shinyServer(function(input, output, session) {
     
 ## Tab Survey ====
 ### Survey - Input ####    
-### Survey - Plots ####    
-    output$distPlot <- renderPlot({
-        NULL
-    })
-    
+### Survey - Output ####
+
     output$yearsCodeFitted <- renderValueBox({
+        amount <- regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
         valueBox(
-            paste0(input$Age, "$/year")
+            paste0(amount, "$/year")
             , "Fitted Value(Income)"
             , icon = icon("list"),
             color = "purple"
@@ -79,10 +77,10 @@ shinyServer(function(input, output, session) {
     })    
 ### Survey - Data tables ####   
     output$dataAges <- renderTable({
-        print("output$dataAges")
-        getDataAges()
+        # getDataAges()
+        regression
     })  
-    
+   
     output$dataDetailsAges <- renderTable({
         print("output$dataDetailsAges")
         getDataAges()
