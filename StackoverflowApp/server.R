@@ -58,9 +58,41 @@ shinyServer(function(input, output, session) {
 ## Tab Survey ====
 ### Survey - Input ####    
 ### Survey - Output ####
-
+getEstimate <- function(pInputField, pSelection) {
+    key <- paste0(pInputField, pSelection)
+    if (key %in% regression$Coefficients){
+        amountV <- regression %>% filter(Coefficients == paste0(pInputField, pSelection)) %>% select(Estimate)
+        return(amountV[[1]])
+    } 
+    return(0)
+}
+    
     output$yearsCodeFitted <- renderValueBox({
-        amount <- regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
+        # inputs <- c(
+        #     regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("MainBranch", input$MainBranch)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("Employment", input$Employment)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("Country", input$Country)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("EdLevel", input$EdLevel)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("YearsCode", input$YearsCode)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("WorkWeekHrs", input$WorkWeekHrs)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("OrgSize", input$OrgSize)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("Gender", input$Gender)) %>% select(Estimate)
+        #     , regression %>% filter(Coefficients == paste0("Dependents", input$Dependents)) %>% select(Estimate)
+        # )
+        interceptV <- regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
+        amount <- interceptV + 
+            getEstimate("MainBranch", input$MainBranch) + 
+            getEstimate("Employment", input$Employment) +
+            getEstimate("Country", input$Country) + 
+            getEstimate("EdLevel", input$EdLevel) +
+            getEstimate("OrgSize", input$OrgSize) +
+            getEstimate("Gender", input$Gender) +
+            getEstimate("Dependents", input$Dependents)
+
+        # + getEstimate("YearsCode", input$YearsCode)
+        # + getEstimate("WorkWeekHrs", input$WorkWeekHrs)
+        
         valueBox(
             paste0(amount, "$/year")
             , "Fitted Value(Income)"
