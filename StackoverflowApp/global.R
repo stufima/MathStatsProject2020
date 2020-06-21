@@ -258,9 +258,10 @@ getUISurveyInputTabBox <- function(){
    # + YearsCode
    , sliderInput(inputId = "YearsCode"
                  , label = "Code in years:"
-                 , min = min(df_survey$YearsCode)
+                 # , min = min(df_survey$YearsCode)
+                 , min = 0
                  , max = max(df_survey$YearsCode)
-                 , value = 30
+                 , value = 0
    )
     # + WorkWeekHrs
    , sliderInput(inputId = "WorkWeekHrs"

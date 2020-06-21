@@ -90,11 +90,11 @@ getEstimate <- function(pInputField, pSelection) {
             getEstimate("Gender", input$Gender) +
             getEstimate("Dependents", input$Dependents)
 
-        # + getEstimate("YearsCode", input$YearsCode)
+        amount <- amount + (getEstimate("YearsCode", "") * input$YearsCode)
         # + getEstimate("WorkWeekHrs", input$WorkWeekHrs)
         
         valueBox(
-            paste0(amount, "$/year")
+            paste0(round(amount,digits = 2), "$/year")
             , "Fitted Value(Income)"
             , icon = icon("list"),
             color = "purple"
