@@ -68,18 +68,6 @@ getEstimate <- function(pInputField, pSelection) {
 }
     
     output$yearsCodeFitted <- renderValueBox({
-        # inputs <- c(
-        #     regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("MainBranch", input$MainBranch)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("Employment", input$Employment)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("Country", input$Country)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("EdLevel", input$EdLevel)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("YearsCode", input$YearsCode)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("WorkWeekHrs", input$WorkWeekHrs)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("OrgSize", input$OrgSize)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("Gender", input$Gender)) %>% select(Estimate)
-        #     , regression %>% filter(Coefficients == paste0("Dependents", input$Dependents)) %>% select(Estimate)
-        # )
         interceptV <- regression %>% filter(Coefficients == "(Intercept)") %>% select(Estimate)
         amount <- interceptV + 
             getEstimate("MainBranch", input$MainBranch) + 
@@ -96,28 +84,15 @@ getEstimate <- function(pInputField, pSelection) {
         valueBox(
             paste0(round(amount,digits = 2), "$/year")
             , "Fitted Value(Income)"
-            , icon = icon("list"),
+            , icon = icon("credit-card"),
             color = "purple"
         )
     })    
-    output$agesFitted <- renderValueBox({
-        valueBox(
-            paste0(input$Age, "$/year"), "Fitted Value(Income)"
-            , icon("credit-card")
-            , color = "purple"
-        )        
-    })    
 ### Survey - Data tables ####   
     output$dataAges <- renderTable({
-        # getDataAges()
         regression
     })  
-   
-    output$dataDetailsAges <- renderTable({
-        print("output$dataDetailsAges")
-        getDataAges()
-    })  
-    
+
 ## Tab About - Output ====
     output$informations <- renderText({
         paste("Some Informations about the Survey")

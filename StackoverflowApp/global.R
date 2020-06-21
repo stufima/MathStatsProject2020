@@ -105,37 +105,6 @@ df_survey <- df_survey %>%
   filter(Age <= max_age) %>%
   mutate(Age = as.integer(Age))
 
-# für die Anzeige im UI benötigt
-getDataAges <- function(){
-   l_dataAges <- df_survey %>%
-     select(
-       Age
-       #    Respondent
-       #  , MainBranch
-       #  , Hobbyist
-       #  , Employment
-       #  , Country
-       #  , Student
-       #  , EdLevel
-       #  , OrgSize
-       #  , DevType
-       , YearsCode
-       #  , ConvertedComp
-       #  , WorkWeekHrs
-       #  , WorkRemote
-       #  , ImpSyn
-       #  , PurchaseWhat
-       #  , LanguageWorkedWith
-       #  , Age
-       , Gender
-       , Dependents
-     ) %>%
-     slice(1:10)
-# without order
-#     top_n(20)
-  return(l_dataAges)
-}
-
 ### YearsCode ####
 YearsCode <- df_survey %>%
   count(YearsCode)
@@ -249,12 +218,6 @@ getUISurveyInputTabBox <- function(){
     # + EdLevel
    , selectInput(inputId = "EdLevel", label = "EdLevel", choices = unique(df_survey$EdLevel))
     # # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
-   , sliderInput(inputId = "Age"
-                 , label = "Age in years:"
-                 , min = min_age
-                 , max = max_age
-                 , value = 30
-   )
    # + YearsCode
    , sliderInput(inputId = "YearsCode"
                  , label = "Code in years:"
@@ -289,22 +252,7 @@ getUISurveyOutputTabBoxPlots <- function(){
       , tabPanel(
         "YearsCode"
         , textOutput("plotCasesTitle")
-        # , infoBox("Fitted Value(Income)", 10 * 2, icon = icon("credit-card"), fill = TRUE)
-        # , infoBox("yearsCodeFitted")
-, valueBoxOutput("yearsCodeFitted")        
-        , plotlyOutput("plotCases"
-                       , width = 600
-        )
-      )
-      , tabPanel(
-        "Ages"
-        , textOutput("plotCasesPer100kTitle")
-        # , infoBox("Fitted Value(Income)", 10 * 2, icon = icon("credit-card"), fill = TRUE)
-        # , infoBox("agesFitted")
-        , valueBoxOutput("agesFitted")
-        , plotlyOutput("plotCasesPer100K"
-                       , width = 600
-        )
+        , valueBoxOutput("yearsCodeFitted")        
       )
     )
   )
@@ -321,10 +269,6 @@ getUISurveyOutputTabBoxDataTables <- function(){
       , width = "400px"
       , tabPanel("Result of input selection"
                  , tableOutput("dataAges")
-      )
-      ### Germany - Output details to plot Ages ####
-      , tabPanel("Details to plot ages"
-                 , tableOutput("dataDetailsAges")
       )
     )
   )
