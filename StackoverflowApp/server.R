@@ -62,6 +62,21 @@ shinyServer(function(input, output, session) {
         NULL
     })
     
+    output$yearsCodeFitted <- renderValueBox({
+        valueBox(
+            paste0(input$Age, "$/year")
+            , "Fitted Value(Income)"
+            , icon = icon("list"),
+            color = "purple"
+        )
+    })    
+    output$agesFitted <- renderValueBox({
+        valueBox(
+            paste0(input$Age, "$/year"), "Fitted Value(Income)"
+            , icon("credit-card")
+            , color = "purple"
+        )        
+    })    
 ### Survey - Data tables ####   
     output$dataAges <- renderTable({
         print("output$dataAges")

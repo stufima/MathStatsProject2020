@@ -236,12 +236,42 @@ getUISurveyInputTabBox <- function(){
     title = textOutput("select_below")
     , width = 12
     , collapsible = TRUE
-    , sliderInput(inputId = "ages"
-                  , label = "Age in years:"
-                  , min = min_age
-                  , max = max_age
-                  , value = 30
-    )
+   # MainBranch 
+    , selectInput(inputId = "MainBranch", label = "MainBranch", choices = unique(df_survey$MainBranch))
+    # + Employment 
+   , selectInput(inputId = "Employment", label = "Employment", choices = unique(df_survey$Employment))
+    # + Country
+   , selectInput(inputId = "Country", label = "Country", choices = unique(df_survey$Country))
+   # # + Student (nicht im Modell, hat nur eine Ausprägung)
+    # + EdLevel
+   , selectInput(inputId = "EdLevel", label = "EdLevel", choices = unique(df_survey$EdLevel))
+    # # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
+   , sliderInput(inputId = "Age"
+                 , label = "Age in years:"
+                 , min = min_age
+                 , max = max_age
+                 , value = 30
+   )
+   # + YearsCode
+   , sliderInput(inputId = "YearsCode"
+                 , label = "Code in years:"
+                 , min = min(df_survey$YearsCode)
+                 , max = max(df_survey$YearsCode)
+                 , value = 30
+   )
+    # + WorkWeekHrs
+   , sliderInput(inputId = "WorkWeekHrs"
+                 , label = "Work Week in hours:"
+                 , min = min_week_hours
+                 , max = max_week_hours
+                 , value = 30
+   )
+    # + OrgSize
+   , selectInput(inputId = "OrgSize", label = "OrgSize", choices = unique(df_survey$OrgSize))
+    # + Gender
+   , radioButtons(inputId = "Gender", label = "Gender", choices = unique(df_survey$Gender))
+    # + Dependents
+   , selectInput(inputId = "Dependents", label = "Dependents", choices = unique(df_survey$Dependents))
   )
   return(l_in_sur_tb)
 }
@@ -253,15 +283,21 @@ getUISurveyOutputTabBoxPlots <- function(){
       id = "tabsetPlotsGermany"
       , width = "500px"
       , tabPanel(
-        "Ages"
+        "YearsCode"
         , textOutput("plotCasesTitle")
+        # , infoBox("Fitted Value(Income)", 10 * 2, icon = icon("credit-card"), fill = TRUE)
+        # , infoBox("yearsCodeFitted")
+, valueBoxOutput("yearsCodeFitted")        
         , plotlyOutput("plotCases"
                        , width = 600
         )
       )
       , tabPanel(
-        "Gender"
+        "Ages"
         , textOutput("plotCasesPer100kTitle")
+        # , infoBox("Fitted Value(Income)", 10 * 2, icon = icon("credit-card"), fill = TRUE)
+        # , infoBox("agesFitted")
+        , valueBoxOutput("agesFitted")
         , plotlyOutput("plotCasesPer100K"
                        , width = 600
         )
