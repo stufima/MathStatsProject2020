@@ -1,9 +1,3 @@
-# TODOS ----
-# Berücksichtigung von Auswirkung der Wochenarbeitszeit auf das Gehalt (Stundenlohn)
-# Werte übersetzen übernimmt Dummy der Linearen Regression
-
-# Anzahl der Kategorien mit überprüfen distinct oder unique 
-
 # Globals for the app ----
 ## Prerequisites and constants ====
 library(shiny)          # framework to generate this web-app
@@ -164,18 +158,20 @@ df_survey %>%
 df_survey <- df_survey %>%
   filter(!is.na(Dependents))
 # Regression ----
-rm <- lm(data = df_survey, formula = ConvertedComp ~ 
-       MainBranch 
+rm <- lm(data = df_survey, formula = ConvertedComp/WorkWeekHrs ~ 
+        
+     + MainBranch 
      + Employment 
      + Country
      # + Student (nicht im Modell, hat nur eine Ausprägung)
      + EdLevel
      # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
      + YearsCode
-     + WorkWeekHrs
+     
      + OrgSize
      + Gender
-     + Dependents)
+     + Dependents   
+        )
 
 regression <- as.data.frame(summary(rm)$coefficients) 
 regression <- regression %>%
@@ -201,8 +197,7 @@ df_tab_ids <- data.frame(
 )
 colnames(df_tab_ids) <- c("label","id","icon")
 
-
-
+## User Input ====
 getUISurveyInputTabBox <- function(){
   l_in_sur_tb <- box(
     title = textOutput("select_below")
@@ -229,7 +224,7 @@ getUISurveyInputTabBox <- function(){
     # + WorkWeekHrs
    , sliderInput(inputId = "WorkWeekHrs"
                  , label = "Work Week in hours:"
-                 , min = min_week_hours
+                 , min = 0
                  , max = max_week_hours
                  , value = 30
    )
@@ -246,31 +241,26 @@ getUISurveyInputTabBox <- function(){
 getUISurveyOutputTabBoxPlots <- function(){
   l_out_sur_tb_pl <- box(
     width = 12
-    , tabBox(
-      id = "tabsetPlotsGermany"
-      , width = "500px"
-      , tabPanel(
-        "YearsCode"
-        , textOutput("plotCasesTitle")
-        , valueBoxOutput("yearsCodeFitted")        
-      )
-    )
+    , textOutput("plotCasesTitle")
+    , valueBoxOutput("yearsCodeFitted")        
   )
   return(l_out_sur_tb_pl)
 }
 ## Survey - Output Data Tables ====
 getUISurveyOutputTabBoxDataTables <- function(){
   l_out_sur_tb_dt <- box(
-    title = "Details to selection"
+    title = "Details of regression"
     , width = 12
     , collapsible = TRUE
-    , tabBox(
-      id = "tabsetDetails"
-      , width = "400px"
-      , tabPanel("Result of input selection"
-                 , tableOutput("dataAges")
-      )
-    )
+    , collapsed = TRUE 
+    , tableOutput("dataAges")
+    
+    , tags$p(paste("R-Squared:", summary(rm)$r.squared))
+    , tags$p(paste("adj. R-Squared:", summary(rm)$adj.r.squared))
+    , tags$p(paste("F-statistic:", summary(rm)$fstatistic[[1]], 
+                   "on", summary(rm)$fstatistic[[2]], 
+                   "and", summary(rm)$fstatistic[[3]],
+                   "DF"))
   )
   return(l_out_sur_tb_dt)
 }

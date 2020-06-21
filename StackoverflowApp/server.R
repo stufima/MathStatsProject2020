@@ -21,42 +21,7 @@ shinyServer(function(input, output, session) {
         )
     })  
 
-### Menu item selection ####
-    s_min_age <- min_age
-    s_max_age <- max_age
-    
-    tabPerform <- reactive({
-        selectedTab <- input$tabSidebar
-        if (length(selectedTab) > 0){
-            switch (selectedTab,
-                "tab_survey" = {
-#                    updateSelectizeInput(session
-#                                        , inputId = "regionchoice"
-#                                        , choices = temp_regionList
-#                                        , label = "Select up to 2 regions of interest:"
-#                                        , selected = c("Germany")
-#                           )
-                            s_min_date <<- (min(df_ages$ages))
-                            s_max_date <<- (max(df_ages$ages))
-                            #
-                            updateSliderInput(session
-                                              , inputId = "ages"
-                                              , min = s_min_date
-                                              , max = s_max_date
-                                              , value = c(s_min_date, s_max_date)
-                            )
-                    }
-                    , {
-                        paste("Keine Aktion für",selectedTab)
-                    }
-            )
-        } else {
-            paste("Keine Aktion, da tablength 0 ist", length(selectedTab))
-        }
-    })
-    
 ## Tab Survey ====
-### Survey - Input ####    
 ### Survey - Output ####
 getEstimate <- function(pInputField, pSelection) {
     key <- paste0(pInputField, pSelection)
@@ -76,29 +41,22 @@ getEstimate <- function(pInputField, pSelection) {
             getEstimate("EdLevel", input$EdLevel) +
             getEstimate("OrgSize", input$OrgSize) +
             getEstimate("Gender", input$Gender) +
-            getEstimate("Dependents", input$Dependents)
-
-        amount <- amount + (getEstimate("YearsCode", "") * input$YearsCode)
-        # + getEstimate("WorkWeekHrs", input$WorkWeekHrs)
+            getEstimate("Dependents", input$Dependents) +
+            (getEstimate("YearsCode", "") * input$YearsCode)
         
+        amount <- amount * input$WorkWeekHrs
+
         valueBox(
-            paste0(round(amount,digits = 2), "$/year")
-            , "Fitted Value(Income)"
+            paste(round(amount,digits = 2), "$/year")
+            , "Income (Fitted Value)"
             , icon = icon("credit-card"),
             color = "purple"
         )
     })    
 ### Survey - Data tables ####   
     output$dataAges <- renderTable({
-        regression
-    })  
+         regression
+        })  
 
-## Tab About - Output ====
-    output$informations <- renderText({
-        paste("Some Informations about the Survey")
-    })
-    output$source <- renderText({
-        paste("Source:","https://insights.stackoverflow.com/survey")
-    })
 # End of Server ----
 })
