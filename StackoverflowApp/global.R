@@ -200,22 +200,22 @@ colnames(df_tab_ids) <- c("label","id","icon")
 ## User Input ====
 getUISurveyInputTabBox <- function(){
   l_in_sur_tb <- box(
-    title = textOutput("select_below")
+    title = "Estimate your annual income"
     , width = 12
     , collapsible = TRUE
    # MainBranch 
-    , selectInput(inputId = "MainBranch", label = "MainBranch", choices = unique(df_survey$MainBranch))
+    , selectInput(inputId = "MainBranch", label = "Are you a developer by main profession?", choices = unique(df_survey$MainBranch))
     # + Employment 
-   , selectInput(inputId = "Employment", label = "Employment", choices = unique(df_survey$Employment))
+   , selectInput(inputId = "Employment", label = "What's your model of work?", choices = unique(df_survey$Employment))
     # + Country
-   , selectInput(inputId = "Country", label = "Country", choices = unique(df_survey$Country))
+   , selectInput(inputId = "Country", label = "What country do you work in?", choices = unique(df_survey$Country))
    # # + Student (nicht im Modell, hat nur eine Ausprägung)
     # + EdLevel
-   , selectInput(inputId = "EdLevel", label = "EdLevel", choices = unique(df_survey$EdLevel))
+   , selectInput(inputId = "EdLevel", label = "What's your highest education Level?", choices = unique(df_survey$EdLevel))
     # # + Age (nicht im Modell, da YearsCode diesen Wert "entsignifiziert")
    # + YearsCode
    , sliderInput(inputId = "YearsCode"
-                 , label = "Code in years:"
+                 , label = "How many years have you been coding?"
                  # , min = min(df_survey$YearsCode)
                  , min = 0
                  , max = max(df_survey$YearsCode)
@@ -223,17 +223,17 @@ getUISurveyInputTabBox <- function(){
    )
     # + WorkWeekHrs
    , sliderInput(inputId = "WorkWeekHrs"
-                 , label = "Work Week in hours:"
+                 , label = "How many hours per week do you work?"
                  , min = 0
                  , max = max_week_hours
                  , value = 30
    )
     # + OrgSize
-   , selectInput(inputId = "OrgSize", label = "OrgSize", choices = unique(df_survey$OrgSize))
+   , selectInput(inputId = "OrgSize", label = "How many employees does your organisation have?", choices = unique(df_survey$OrgSize))
     # + Gender
-   , radioButtons(inputId = "Gender", label = "Gender", choices = unique(df_survey$Gender))
+   , radioButtons(inputId = "Gender", label = "What's your gender?", choices = unique(df_survey$Gender))
     # + Dependents
-   , selectInput(inputId = "Dependents", label = "Dependents", choices = unique(df_survey$Dependents))
+   , selectInput(inputId = "Dependents", label = "Do you have any dependents, that you care for (children, elders..)?", choices = unique(df_survey$Dependents))
   )
   return(l_in_sur_tb)
 }
