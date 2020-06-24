@@ -35,10 +35,10 @@ shinyUI(
               tabName = df_tab_ids$id[[2]]
               , fluidRow(
                   box(
-                      # title = "Informations",
+                      # title = "Information",
                       width = 12,
                       collapsible = FALSE,
-                      # , textOutput("informations")
+                      # , textOutput("information")
                       # , textOutput("source")
                       ## Tab About - Output ====
                       tags$h2("Some Informations about the Survey"),

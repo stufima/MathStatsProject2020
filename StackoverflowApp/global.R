@@ -77,7 +77,7 @@ df_survey <- df_survey %>%
 df_survey %>%
   count(EdLevel)
 
-# Bereinigen des Datensatzes, behalten ausgewählter EdLevels
+# Bereinigen des Datensatzes, Behalten ausgewählter EdLevels
 df_survey <- df_survey %>%
   filter(EdLevel %in% c("Associate degree",
                         "Bachelor’s degree (BA, BS, B.Eng., etc.)",
@@ -157,6 +157,7 @@ df_survey %>%
 
 df_survey <- df_survey %>%
   filter(!is.na(Dependents))
+
 # Regression ----
 rm <- lm(data = df_survey, formula = ConvertedComp/WorkWeekHrs ~ 
         
